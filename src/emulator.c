@@ -773,7 +773,7 @@ struct emu *emu_create(struct host *host) {
     emu->res_mutex = slock_new();
     emu->res_cond = scond_new();
 
-    emu->run_thread = thread_create(&emu_run_thread, NULL, emu);
+    emu->run_thread = sthread_create(&emu_run_thread, emu);
     CHECK_NOTNULL(emu->run_thread);
   }
 

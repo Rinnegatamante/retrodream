@@ -229,7 +229,7 @@ void get_next_trace_filename(char *filename, size_t size) {
   for (int i = 0; i < INT_MAX; i++) {
     snprintf(filename, size, "%s" PATH_SEPARATOR "%d.trace", appdir, i);
 
-    if (!fs_exists(filename)) {
+    if (!path_is_valid(filename)) {
       return;
     }
   }

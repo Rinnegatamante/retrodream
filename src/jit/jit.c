@@ -276,7 +276,7 @@ static void jit_dump_block(struct jit *jit, const char *type,
   char irdir[PATH_MAX];
   snprintf(irdir, sizeof(irdir), "%s" PATH_SEPARATOR "%s-%s-ir", appdir,
            jit->tag, type);
-  CHECK(fs_mkdir(irdir));
+  CHECK(path_mkdir(irdir));
 
   char filename[PATH_MAX];
   snprintf(filename, sizeof(filename), "%s" PATH_SEPARATOR "0x%08x.ir", irdir,
