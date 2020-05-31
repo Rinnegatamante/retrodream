@@ -357,15 +357,15 @@ static void emu_vblank_in(void *userdata, int vid_disabled) {
   struct emu *emu = userdata;
 
   if (emu->multi_threaded) {
-    mutex_lock(emu->res_mutex);
+    slock_lock(emu->res_mutex);
   }
 
   emu->state = EMU_DRAWFRAME;
   emu->vid_disabled = vid_disabled;
 
   if (emu->multi_threaded) {
-    cond_signal(emu->res_cond);
-    mutex_unlock(emu->res_mutex);
+    scond_signal(emu->res_cond);
+    slock_unlock(emu->res_mutex);
   }
 }
 
@@ -383,13 +383,13 @@ static void emu_finish_render(void *userdata) {
        textures, etc. during the estimated render time. however, if it hasn't
        finished, the emulation thread must be paused to avoid altering
        the yet-to-be-uploaded texture memory */
-    mutex_lock(emu->res_mutex);
+    slock_lock(emu->res_mutex);
 
     /* if pending_ctx is non-NULL here, a frame is being skipped */
     emu->pending_ctx = NULL;
-    cond_signal(emu->res_cond);
+    scond_signal(emu->res_cond);
 
-    mutex_unlock(emu->res_mutex);
+    slock_unlock(emu->res_mutex);
   }
 }
 
@@ -417,12 +417,12 @@ static void emu_start_render(void *userdata, struct ta_context *ctx) {
 
   if (emu->multi_threaded) {
     /* save off context and notify video thread that it's available */
-    mutex_lock(emu->res_mutex);
+    slock_lock(emu->res_mutex);
 
     emu->pending_ctx = ctx;
-    cond_signal(emu->res_cond);
+    scond_signal(emu->res_cond);
 
-    mutex_unlock(emu->res_mutex);
+    slock_unlock(emu->res_mutex);
   } else {
     emu->pending_ctx = ctx;
   }
@@ -477,14 +477,14 @@ static void *emu_run_thread(void *data) {
 
   while (1) {
     /* wait for video thread to request a frame to be ran */
-    mutex_lock(emu->req_mutex);
+    slock_lock(emu->req_mutex);
 
     while (emu->state == EMU_WAITING) {
-      cond_wait(emu->req_cond, emu->req_mutex);
+      scond_wait(emu->req_cond, emu->req_mutex);
     }
 
     if (emu->state == EMU_SHUTDOWN) {
-      mutex_unlock(emu->req_mutex);
+      slock_unlock(emu->req_mutex);
       break;
     }
 
@@ -492,7 +492,7 @@ static void *emu_run_thread(void *data) {
 
     emu->state = EMU_WAITING;
 
-    mutex_unlock(emu->req_mutex);
+    slock_unlock(emu->req_mutex);
   }
 
   return NULL;
@@ -579,23 +579,23 @@ void emu_render_frame(struct emu *emu) {
 
   /* request a frame to be ran */
   if (emu->multi_threaded) {
-    mutex_lock(emu->req_mutex);
+    slock_lock(emu->req_mutex);
 
     CHECK_EQ(emu->state, EMU_WAITING);
     emu->state = EMU_RUNFRAME;
-    cond_signal(emu->req_cond);
+    scond_signal(emu->req_cond);
 
-    mutex_unlock(emu->req_mutex);
+    slock_unlock(emu->req_mutex);
   } else {
     emu_run_until_vblank(emu);
   }
 
   /* process any context submitted during the frame */
   if (emu->multi_threaded) {
-    mutex_lock(emu->res_mutex);
+    slock_lock(emu->res_mutex);
 
     while (emu->state == EMU_RUNFRAME && !emu->pending_ctx) {
-      cond_wait(emu->res_cond, emu->res_mutex);
+      scond_wait(emu->res_cond, emu->res_mutex);
     }
   }
 
@@ -608,18 +608,18 @@ void emu_render_frame(struct emu *emu) {
   }
 
   if (emu->multi_threaded) {
-    mutex_unlock(emu->res_mutex);
+    slock_unlock(emu->res_mutex);
   }
 
   /* wait for vblank_in */
   if (emu->multi_threaded) {
-    mutex_lock(emu->res_mutex);
+    slock_lock(emu->res_mutex);
 
     while (emu->state == EMU_RUNFRAME) {
-      cond_wait(emu->res_cond, emu->res_mutex);
+      scond_wait(emu->res_cond, emu->res_mutex);
     }
 
-    mutex_unlock(emu->res_mutex);
+    slock_unlock(emu->res_mutex);
   }
 
   /* render the latest video source */
@@ -640,9 +640,9 @@ void emu_debug_menu(struct emu *emu) {
 #ifdef HAVE_IMGUI
   /* ensure the emulation thread isn't still executing a previous frame */
   if (emu->multi_threaded) {
-    mutex_lock(emu->req_mutex);
+    slock_lock(emu->req_mutex);
     CHECK_EQ(emu->state, EMU_WAITING);
-    mutex_unlock(emu->req_mutex);
+    slock_unlock(emu->req_mutex);
   }
 
   if (igBeginMainMenuBar()) {
@@ -722,18 +722,18 @@ void emu_vid_created(struct emu *emu, struct render_backend *r) {
 void emu_destroy(struct emu *emu) {
   /* shutdown the emulation thread */
   if (emu->multi_threaded) {
-    mutex_lock(emu->req_mutex);
+    slock_lock(emu->req_mutex);
     emu->state = EMU_SHUTDOWN;
-    cond_signal(emu->req_cond);
-    mutex_unlock(emu->req_mutex);
+    scond_signal(emu->req_cond);
+    slock_unlock(emu->req_mutex);
 
     void *result;
-    thread_join(emu->run_thread, &result);
+    sthread_join(emu->run_thread, &result);
 
-    mutex_destroy(emu->req_mutex);
-    cond_destroy(emu->req_cond);
-    mutex_destroy(emu->res_mutex);
-    cond_destroy(emu->res_cond);
+    slock_free(emu->req_mutex);
+    scond_free(emu->req_cond);
+    slock_free(emu->res_mutex);
+    scond_free(emu->res_cond);
   }
 
   emu_stop_tracing(emu);
@@ -768,10 +768,10 @@ struct emu *emu_create(struct host *host) {
 
   if (emu->multi_threaded) {
     emu->state = EMU_WAITING;
-    emu->req_mutex = mutex_create();
-    emu->req_cond = cond_create();
-    emu->res_mutex = mutex_create();
-    emu->res_cond = cond_create();
+    emu->req_mutex = slock_new();
+    emu->req_cond = scond_new();
+    emu->res_mutex = slock_new();
+    emu->res_cond = scond_new();
 
     emu->run_thread = thread_create(&emu_run_thread, NULL, emu);
     CHECK_NOTNULL(emu->run_thread);
