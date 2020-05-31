@@ -80,10 +80,15 @@ SOURCES_C := $(CORE_DIR)/src/core/assert.c \
 	$(CORE_DIR)/src/jit/jit.c \
 	$(CORE_DIR)/src/jit/pass_stats.c \
 	$(CORE_DIR)/src/host/retro_host.c \
-	$(CORE_DIR)/src/render/gl_backend.c \
 	$(CORE_DIR)/src/emulator.c \
 	$(CORE_DIR)/src/options.c \
 	$(CORE_DIR)/src/stats.c
+
+ifeq ($(USE_GL1), 1)
+	SOURCES_C += $(CORE_DIR)/src/render/gl1_backend.c
+else
+	SOURCES_C += $(CORE_DIR)/src/render/gl_backend.c
+endif
 
 SOURCES_CXX :=
 
