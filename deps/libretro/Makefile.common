@@ -94,7 +94,9 @@ SOURCES_CXX :=
 
 SOURCES_CPP :=
 
+ifneq ($(USE_GL1), 1)
 COREFLAGS += -DHAVE_FASTMEM
+endif
 
 #==--------------------------------------------------------------------------==#
 # inih
@@ -137,6 +139,7 @@ SOURCES_C += $(CORE_DIR)/deps/capstone/arch/X86/X86Disassembler.c \
 #==--------------------------------------------------------------------------==#
 # glad
 #==--------------------------------------------------------------------------==#
+ifneq ($(USE_GL1), 1)
 INCFLAGS += -I$(CORE_DIR)/deps/glad/include \
 
 # work around glad using dlopen, etc. which are actually unused
@@ -147,7 +150,7 @@ LDFLAGS += -Wl,--unresolved-symbols=ignore-all
 endif
 
 SOURCES_C += $(CORE_DIR)/deps/glad/src/glad.c
-
+endif
 #==--------------------------------------------------------------------------==#
 # imgui
 #==--------------------------------------------------------------------------==#

@@ -14,6 +14,10 @@
 
 #define PATH_SEPARATOR "/"
 
+#ifndef PATH_MAX
+#define PATH_MAX 512
+#endif
+
 #else
 
 #include <direct.h>
