@@ -23,6 +23,7 @@ SOURCES_C := $(CORE_DIR)/src/core/assert.c \
 	$(CORE_DIR)/src/guest/bios/bios.c \
 	$(CORE_DIR)/src/guest/bios/flash.c \
 	$(CORE_DIR)/src/guest/bios/syscalls.c \
+	$(CORE_DIR)/src/guest/bios/scramble.c \
 	$(CORE_DIR)/src/guest/gdrom/cdi.c \
 	$(CORE_DIR)/src/guest/gdrom/chd.c \
 	$(CORE_DIR)/src/guest/gdrom/disc.c \
