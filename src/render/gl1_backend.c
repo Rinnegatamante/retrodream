@@ -60,7 +60,7 @@ static GLenum wrap_modes[] = {
 };
 
 static GLenum depth_funcs[] = {
-    GL_NONE,     /* DEPTH_NONE */
+    0,     /* DEPTH_NONE */
     GL_NEVER,    /* DEPTH_NEVER */
     GL_LESS,     /* DEPTH_LESS */
     GL_EQUAL,    /* DEPTH_EQUAL */
@@ -72,12 +72,12 @@ static GLenum depth_funcs[] = {
 };
 
 static GLenum cull_face[] = {
-    GL_NONE,  /* CULL_NONE */
+    0,  /* CULL_NONE */
     GL_FRONT, /* CULL_FRONT */
     GL_BACK   /* CULL_BACK */
 };
 
-static GLenum blend_funcs[] = {GL_NONE,
+static GLenum blend_funcs[] = {0,
                                GL_ZERO,
                                GL_ONE,
                                GL_SRC_COLOR,
@@ -125,7 +125,7 @@ static void r_create_textures(struct render_backend *r) {
   glBindTexture(GL_TEXTURE_2D, r->white_texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
   glBindTexture(GL_TEXTURE_2D, 0);
 }

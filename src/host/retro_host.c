@@ -1,4 +1,6 @@
+#ifndef USE_GL1
 #include <glad/glad.h>
+#endif
 #include <libretro.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,10 +145,11 @@ static void video_context_destroyed() {
 }
 
 static void video_context_reset() {
+#ifndef USE_GL1
   /* link in gl functions at runtime */
   int res = gladLoadGLLoader((GLADloadproc)hw_render.get_proc_address);
   CHECK_EQ(res, 1, "GL initialization failed");
-
+#endif
   CHECK(!g_host->video.r);
   g_host->video.r = r_create(VIDEO_WIDTH, VIDEO_HEIGHT);
 
@@ -260,11 +263,12 @@ void retro_reset() {}
 void retro_run() {
   input_poll(g_host);
 
+#ifndef USE_GL1
   /* bind the framebuffer provided by retroarch before calling into the
      emulator */
   uintptr_t fb = hw_render.get_current_framebuffer();
   glBindFramebuffer(GL_FRAMEBUFFER, fb);
-
+#endif
   emu_render_frame(g_host->emu);
 
   /* call back into retroarch, letting it know a frame has been rendered */
