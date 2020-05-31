@@ -176,6 +176,8 @@ static int host_init(struct host *host) {
     LOG_WARNING("host_init failed to initialize hardware renderer");
     return 0;
   }
+#else
+  video_context_reset();
 #endif
   return 1;
 }
