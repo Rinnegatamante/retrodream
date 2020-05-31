@@ -274,7 +274,11 @@ void retro_run() {
   emu_render_frame(g_host->emu);
 
   /* call back into retroarch, letting it know a frame has been rendered */
+#ifdef USE_GL1
+  video_cb(RETRO_HW_FRAME_BUFFER_VALID, 0, 0, 0);
+#else
   video_cb(RETRO_HW_FRAME_BUFFER_VALID, VIDEO_WIDTH, VIDEO_HEIGHT, 0);
+#endif
 }
 
 size_t retro_serialize_size() {

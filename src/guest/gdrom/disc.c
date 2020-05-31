@@ -165,10 +165,10 @@ int disc_read_sectors(struct disc *disc, int fad, int num_sectors,
   return read;
 }
 
+uint8_t tmp[0x10000];
+
 int disc_find_file(struct disc *disc, const char *filename, int *fad,
                    int *len) {
-  uint8_t tmp[0x10000];
-
   /* get the session for the main data track */
   struct session *session = disc_get_session(disc, 1);
   struct track *track = disc_get_track(disc, session->first_track);

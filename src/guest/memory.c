@@ -75,7 +75,7 @@ struct memory {
   struct address_space arm7;
   struct address_space sh4;
 };
-
+#ifdef HAVE_FASTMEM
 static int reserve_address_space(uint8_t **base) {
   /* find a contiguous 32-bit range of memory to map an address space to */
   const uint64_t ADDRESS_SPACE_SIZE = UINT64_C(1) << 32;
@@ -101,7 +101,7 @@ static int reserve_address_space(uint8_t **base) {
 
   return 0;
 }
-
+#endif
 static uint32_t mem_unhandled_read(struct memory *mem, uint32_t addr,
                                    uint32_t data_mask) {
   LOG_WARNING("mem_unhandled_read addr=0x%08x", addr);
