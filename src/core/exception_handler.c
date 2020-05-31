@@ -19,13 +19,16 @@ static void exception_handler_install() {
     struct exception_handler *handler = &handlers[i];
     list_add(&free_handlers, &handler->it);
   }
-
+#ifndef VITA
   int res = exception_handler_install_platform();
   CHECK(res);
+#endif
 }
 
 static void exception_handler_uninstall() {
+#ifndef VITA
   exception_handler_uninstall_platform();
+#endif
 }
 
 struct exception_handler *exception_handler_add(void *data,

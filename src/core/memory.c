@@ -66,8 +66,9 @@ static int watcher_handle_exception(void *ctx, struct exception_state *ex) {
       /* restore page permissions */
       uintptr_t aligned_begin = n->low;
       size_t aligned_size = (n->high - n->low) + 1;
+#ifndef VITA
       CHECK(protect_pages((void *)aligned_begin, aligned_size, ACC_READWRITE));
-
+#endif
       remove_memory_watch(watch);
     }
 
@@ -103,7 +104,11 @@ struct memory_watch *add_single_write_watch(const void *ptr, size_t size,
   }
 
   /* page align the range to be watched */
+#ifdef VITA
+  size_t page_size = 1;
+#else
   size_t page_size = get_page_size();
+#endif
   uintptr_t aligned_begin = ALIGN_DOWN((uintptr_t)ptr, page_size);
   uintptr_t aligned_end = ALIGN_UP((uintptr_t)ptr + size, page_size) - 1;
   size_t aligned_size = (aligned_end - aligned_begin) + 1;

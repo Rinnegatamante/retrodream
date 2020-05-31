@@ -259,7 +259,7 @@ static void emu_register_texture_source(struct emu *emu, union tsp tsp,
                     &entry->palette_size);
   }
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(VITA)
   /* add write callback in order to invalidate on future writes. the callback
      address will be page aligned, therefore it will be triggered falsely in
      some cases. over invalidate in these cases */

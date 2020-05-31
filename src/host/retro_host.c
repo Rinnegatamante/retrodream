@@ -161,7 +161,7 @@ static void video_context_reset() {
 static int host_init(struct host *host) {
   /* let retroarch know about our controller mappings */
   env_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, controller_desc);
-
+#ifndef USE_GL1
   /* request an initial OpenGL context */
   hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
   hw_render.version_major = 3;
@@ -176,7 +176,7 @@ static int host_init(struct host *host) {
     LOG_WARNING("host_init failed to initialize hardware renderer");
     return 0;
   }
-
+#endif
   return 1;
 }
 
