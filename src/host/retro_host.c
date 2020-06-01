@@ -16,6 +16,13 @@
 #define VIDEO_WIDTH 640
 #define VIDEO_HEIGHT 480
 
+#ifdef VITA
+extern uint16_t *gIndices;
+extern float *gVertexBuffer;
+extern uint16_t *gIndicesPtr;
+extern float *gVertexBufferPtr;
+#endif
+
 static struct retro_hw_render_callback hw_render;
 static retro_environment_t env_cb;
 static retro_audio_sample_t audio_cb;
@@ -274,11 +281,12 @@ void retro_run() {
   emu_render_frame(g_host->emu);
 
   /* call back into retroarch, letting it know a frame has been rendered */
-#ifdef USE_GL1
-  video_cb(RETRO_HW_FRAME_BUFFER_VALID, 0, 0, 0);
-#else
   video_cb(RETRO_HW_FRAME_BUFFER_VALID, VIDEO_WIDTH, VIDEO_HEIGHT, 0);
-#endif
+  
+#ifdef VITA
+  gVertexBuffer = gVertexBufferPtr;
+  gIndices = gIndicesPtr;
+#endif  
 }
 
 size_t retro_serialize_size() {

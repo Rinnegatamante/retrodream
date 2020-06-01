@@ -85,7 +85,11 @@ SOURCES_C := $(CORE_DIR)/src/core/assert.c \
 	$(CORE_DIR)/src/stats.c
 
 ifeq ($(USE_GL1), 1)
+ifeq ($(USE_GL2), 1)
+	SOURCES_C += $(CORE_DIR)/src/render/gl2_backend.c
+else
 	SOURCES_C += $(CORE_DIR)/src/render/gl1_backend.c
+endif
 else
 	SOURCES_C += $(CORE_DIR)/src/render/gl_backend.c
 endif

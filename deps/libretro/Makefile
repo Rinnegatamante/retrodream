@@ -354,6 +354,7 @@ else ifneq (,$(findstring vita,$(platform)))
    CFLAGS += -DVITA -lm
    VITA = 1
    USE_GL1 = 1
+   USE_GL2 = 1
 
    PLATFORM_EXT := unix
    STATIC_LINKING=1
