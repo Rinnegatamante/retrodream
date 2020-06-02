@@ -1,5 +1,6 @@
 INCFLAGS += \
 	-I$(CORE_DIR)/src \
+	-I$(CORE_DIR)/src/libretro-common/include \
 	-I$(CORE_DIR)/deps/dirent \
 	-I$(CORE_DIR)/deps/gdb_server \
 	-I$(CORE_DIR)/deps/inih \
@@ -82,7 +83,14 @@ SOURCES_C := $(CORE_DIR)/src/core/assert.c \
 	$(CORE_DIR)/src/host/retro_host.c \
 	$(CORE_DIR)/src/emulator.c \
 	$(CORE_DIR)/src/options.c \
-	$(CORE_DIR)/src/stats.c
+	$(CORE_DIR)/src/stats.c \
+	$(CORE_DIR)/src/libretro-common/rthreads/rthreads.c \
+	$(CORE_DIR)/src/libretro-common/file/file_path.c \
+	$(CORE_DIR)/src/libretro-common/compat/compat_strl.c \
+	$(CORE_DIR)/src/libretro-common/compat/compat_strcasestr.c \
+	$(CORE_DIR)/src/libretro-common/vfs/vfs_implementation.c \
+	$(CORE_DIR)/src/libretro-common/encodings/encoding_utf.c \
+	$(CORE_DIR)/src/libretro-common/compat/fopen_utf8.c
 
 ifeq ($(USE_GL1), 1)
 ifeq ($(USE_GL2), 1)
