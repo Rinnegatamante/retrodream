@@ -120,7 +120,8 @@ static void r_create_textures(struct render_backend *r) {
   /* create default all white texture */
   uint8_t pixels[64 * 64 * 4];
   memset(pixels, 0xff, sizeof(pixels));
-
+  
+  glGenTextures(1, &r->pixel_texture);
   glGenTextures(1, &r->white_texture);
   glBindTexture(GL_TEXTURE_2D, r->white_texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -375,6 +376,27 @@ void r_begin_ta_surfaces(struct render_backend *r, int video_width,
 
 void r_draw_pixels(struct render_backend *r, const uint8_t *pixels, int x,
                    int y, int width, int height) {
+  glBindTexture(GL_TEXTURE_2D, r->pixel_texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+  glUseProgram(0);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, width, height, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glBegin(GL_QUADS);
+  glTexCoord2i(0, 0);
+  glVertex3f(0, 0, -1);
+  glTexCoord2i(1, 0);
+  glVertex3f(width, 0, -1);
+  glTexCoord2i(1, 1);
+  glVertex3f(width, height, -1);
+  glTexCoord2i(0, 1);
+  glVertex3f(0, height, -1);
+  glEnd();
 }
 
 void r_viewport(struct render_backend *r, int x, int y, int width, int height) {

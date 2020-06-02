@@ -211,8 +211,6 @@ static void r_destroy_program(struct shader_program *program) {
 
 static int r_compile_program(struct render_backend *r,
                              struct shader_program *program) {
-  char buffer[16384] = {0};
-
 	memset(program, 0, sizeof(*program));
 	program->prog = glCreateProgram();
 
@@ -272,14 +270,16 @@ static void r_create_textures(struct render_backend *r) {
   /* create default all white texture */
   uint8_t pixels[64 * 64 * 4];
   memset(pixels, 0xff, sizeof(pixels));
-
+  glGenTextures(1, &r->pixel_texture);
   glGenTextures(1, &r->white_texture);
   glBindTexture(GL_TEXTURE_2D, r->white_texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
+#ifndef VITA
   glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 }
 
 static void r_set_initial_state(struct render_backend *r) {
@@ -290,10 +290,13 @@ static void r_set_initial_state(struct render_backend *r) {
   glCullFace(GL_BACK);
 
   glDisable(GL_BLEND);
+  
+  glEnable(GL_TEXTURE_2D);
 }
 
 static struct shader_program *r_get_ta_program(struct render_backend *r,
                                                const struct ta_surface *surf) {
+												   LOG_INFO("r_get_ta_program called");
   int idx = (int)surf->params.shade;
   if (surf->params.texture) {
     idx |= ATTR_TEXTURE;
@@ -356,7 +359,7 @@ uint16_t ta_draw_indices_num = 0;
 void r_draw_ta_surface(struct render_backend *r,
                        const struct ta_surface *surf) {
   glDepthMask(!!surf->params.depth_write);
-
+LOG_INFO("r_draw_ta_surfaces called");
   if (surf->params.depth_func == DEPTH_NONE) {
     glDisable(GL_DEPTH_TEST);
   } else {
@@ -401,6 +404,7 @@ void r_begin_ta_surfaces(struct render_backend *r, int video_width,
                          int video_height, const struct ta_vertex *verts,
                          int num_verts, const uint16_t *indices,
                          int num_indices) {
+							 LOG_INFO("r_begin_ta_surfaces called");
   /* uniforms will be lazily bound for each program inside of r_draw_surface */
   r->uniform_video_scale[0] = 2.0f / (float)video_width;
   r->uniform_video_scale[1] = -1.0f;
@@ -423,7 +427,27 @@ void r_begin_ta_surfaces(struct render_backend *r, int video_width,
 
 void r_draw_pixels(struct render_backend *r, const uint8_t *pixels, int x,
                    int y, int width, int height) {
-  // TODO
+  glBindTexture(GL_TEXTURE_2D, r->pixel_texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+  glUseProgram(0);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, width, height, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glBegin(GL_QUADS);
+  glTexCoord2i(0, 0);
+  glVertex3f(0, 0, -1);
+  glTexCoord2i(1, 0);
+  glVertex3f(width, 0, -1);
+  glTexCoord2i(1, 1);
+  glVertex3f(width, height, -1);
+  glTexCoord2i(0, 1);
+  glVertex3f(0, height, -1);
+  glEnd();
 }
 
 void r_viewport(struct render_backend *r, int x, int y, int width, int height) {
@@ -435,8 +459,6 @@ void r_viewport(struct render_backend *r, int x, int y, int width, int height) {
 }
 
 void r_clear(struct render_backend *r) {
-  glDepthMask(1);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
 
@@ -456,6 +478,8 @@ texture_handle_t r_create_texture(struct render_backend *r,
                                   enum wrap_mode wrap_u, enum wrap_mode wrap_v,
                                   int mipmaps, int width, int height,
                                   const uint8_t *buffer) {
+									  
+	LOG_INFO("r_create_texture called");
   /* find next open texture entry */
   texture_handle_t handle;
   for (handle = 1; handle < MAX_TEXTURES; handle++) {
@@ -483,8 +507,8 @@ texture_handle_t r_create_texture(struct render_backend *r,
   if (mipmaps) {
     glGenerateMipmap(GL_TEXTURE_2D);
   }
-#endif
   glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
   return handle;
 }
@@ -518,6 +542,6 @@ struct render_backend *r_create(int width, int height) {
   gIndicesPtr = (uint16_t*)malloc(0x600000);
   gVertexBuffer = gVertexBufferPtr;
   gIndices = gIndicesPtr;
-  
+  LOG_INFO("r_create returning 0x%08X", r);
   return r;
 }
