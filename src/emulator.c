@@ -526,7 +526,7 @@ void emu_render_frame(struct emu *emu) {
     audio_push(emu->host, (int16_t *)silence, ARRAY_SIZE(silence));
     return;
   }
-
+#ifndef USE_GL1
   int width = r_width(emu->r);
   int height = r_height(emu->r);
   int frame_width;
@@ -554,7 +554,7 @@ void emu_render_frame(struct emu *emu) {
   }
 
   r_viewport(emu->r, frame_x, frame_y, frame_width, frame_height);
-
+#endif
   /* an overview of each frames lifecycle looks like:
 
      main thread                        | emulation thread

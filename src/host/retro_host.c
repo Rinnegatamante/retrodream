@@ -13,8 +13,13 @@
 #include "render/render_backend.h"
 
 #define AUDIO_FREQ AICA_SAMPLE_FREQ
+#ifdef VITA
+#define VIDEO_WIDTH 960
+#define VIDEO_HEIGHT 544
+#else
 #define VIDEO_WIDTH 640
 #define VIDEO_HEIGHT 480
+#endif
 
 #ifdef VITA
 extern uint16_t *gIndices;
@@ -225,7 +230,7 @@ unsigned retro_api_version() {
 
 void retro_get_system_info(struct retro_system_info *info) {
   info->library_name = "RetroDream";
-  info->library_version = "0.0";
+  info->library_version = "0.1";
   info->valid_extensions = "cdi|chd|gdi";
   info->need_fullpath = true;
   info->block_extract = false;
